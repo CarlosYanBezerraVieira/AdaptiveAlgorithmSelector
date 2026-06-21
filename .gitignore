@@ -224,3 +224,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 .vscode/
+
+# Project generated outputs
+resultados/
