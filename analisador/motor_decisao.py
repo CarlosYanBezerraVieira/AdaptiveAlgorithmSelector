@@ -28,6 +28,11 @@ def selecionar_melhor_algoritmo(propriedades):
             pontuacao["Busca Sequencial"] += 40
             if pontuacao["Busca Hash"] > -100:
                 pontuacao["Busca Hash"] -= 20
+        else:
+            # Penalização por tempo linear O(n) para busca sequencial em tamanhos maiores
+            penalidade_n = min(60, tamanho // 100)
+            if pontuacao["Busca Sequencial"] > -100:
+                pontuacao["Busca Sequencial"] -= penalidade_n
             
         # Determinação do vencedor e filtragem de alternativas válidas (não banidas)
         melhor = max(pontuacao, key=pontuacao.get)
@@ -35,6 +40,7 @@ def selecionar_melhor_algoritmo(propriedades):
         alternativas = sorted(alternativas, key=lambda x: pontuacao[x], reverse=True)[:2]
         
         complexidades = {"Busca Sequencial": "O(n)", "Busca Binária": "O(log n)", "Busca Hash": "O(1)"}
+        metadados_memoria = {"Busca Sequencial": "O(1)", "Busca Binária": "O(1)", "Busca Hash": "O(n)"}
         
         # Geração de Justificativas Dinâmicas e Coerentes baseadas em Metadados
         justificativas = []
@@ -61,6 +67,8 @@ def selecionar_melhor_algoritmo(propriedades):
             "recomendado": melhor, 
             "pontuacao": min(100, max(0, pontuacao[melhor])),
             "complexidade": complexidades[melhor], 
+            "memoria": metadados_memoria[melhor],
+            "estabilidade": "N/A", # Não se aplica à busca simples
             "justificativas": justificativas,
             "avisos": avisos, 
             "alternativas": alternativas
@@ -97,14 +105,22 @@ def selecionar_melhor_algoritmo(propriedades):
             if pontuacao["Quick Sort"] > -100 and grau_ordenacao < 0.70:
                 pontuacao["Quick Sort"] += 15
 
-        # Penalização progressiva por tamanho (Evita algoritmos O(n²) em vetores grandes)
-        if tamanho > 500:
-            if pontuacao["Selection Sort"] > -100: pontuacao["Selection Sort"] -= 50
-            if pontuacao["Bubble Sort"] > -100:    pontuacao["Bubble Sort"] -= 50
+        # Penalização progressiva por tempo de execução baseada no tamanho
+        if tamanho > 100:
+            # Deduz até 100 pontos dependendo do quão grande o array é para algoritmos O(n²)
+            penalidade_n2 = min(100, tamanho // 50) 
+            if pontuacao["Selection Sort"] > -100: pontuacao["Selection Sort"] -= penalidade_n2
+            if pontuacao["Bubble Sort"] > -100:    pontuacao["Bubble Sort"] -= penalidade_n2
             
-            # Insertion Sort só sobrevive em arrays grandes se estiver quase ordenado
+            # Insertion Sort sofre penalidade O(n²) se não estiver quase ordenado
             if pontuacao["Insertion Sort"] > -100 and grau_ordenacao > 0.12:
-                pontuacao["Insertion Sort"] -= 50
+                pontuacao["Insertion Sort"] -= penalidade_n2
+
+            # Algoritmos O(n log n) também têm uma penalidade levíssima pelo tempo, mas muito menor
+            penalidade_nlogn = min(15, tamanho // 1000)
+            if pontuacao["Merge Sort"] > -100: pontuacao["Merge Sort"] -= penalidade_nlogn
+            if pontuacao["Quick Sort"] > -100: pontuacao["Quick Sort"] -= penalidade_nlogn
+            if pontuacao["Heap Sort"] > -100: pontuacao["Heap Sort"] -= penalidade_nlogn
 
         # 3. ANÁLISE DE CENÁRIOS CONTEXTUAIS (DESEMPENHO PRÁTICO)
         
@@ -120,6 +136,8 @@ def selecionar_melhor_algoritmo(propriedades):
             if pontuacao["Heap Sort"] > -100:    pontuacao["Heap Sort"] += 25
             if pontuacao["Merge Sort"] > -100:   pontuacao["Merge Sort"] += 15
             if pontuacao["Quick Sort"] > -100:   pontuacao["Quick Sort"] -= 25
+            if pontuacao["Insertion Sort"] > -100: 
+                pontuacao["Insertion Sort"] -= 100 # Penalidade severa: Pior caso O(n²) real
 
         # 4. FILTRAGEM SEGURA DE ALTERNATIVAS
         melhor = max(pontuacao, key=pontuacao.get)
@@ -135,6 +153,15 @@ def selecionar_melhor_algoritmo(propriedades):
             "Merge Sort": "O(n log n) garantido", 
             "Quick Sort": "O(n log n) médio", 
             "Heap Sort": "O(n log n) garantido"
+        }
+        
+        metadados_memoria_estabilidade = {
+            "Insertion Sort": {"memoria": "O(1)", "estavel": "Sim"},
+            "Selection Sort": {"memoria": "O(1)", "estavel": "Não"},
+            "Bubble Sort": {"memoria": "O(1)", "estavel": "Sim"},
+            "Merge Sort": {"memoria": "O(n)", "estavel": "Sim"},
+            "Quick Sort": {"memoria": "O(log n) médio", "estavel": "Não"},
+            "Heap Sort": {"memoria": "O(1)", "estavel": "Não"}
         }
         
         # 5. GERAÇÃO DE JUSTIFICATIVAS CONTEXTUAIS
@@ -170,6 +197,8 @@ def selecionar_melhor_algoritmo(propriedades):
             "recomendado": melhor,
             "pontuacao": min(100, max(0, pontuacao[melhor])),
             "complexidade": complexidades[melhor], 
+            "memoria": metadados_memoria_estabilidade[melhor]["memoria"],
+            "estabilidade": metadados_memoria_estabilidade[melhor]["estavel"],
             "justificativas": justificativas,
             "avisos": avisos, 
             "alternativas": alternativas
