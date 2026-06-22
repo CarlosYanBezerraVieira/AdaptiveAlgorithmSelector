@@ -1,21 +1,19 @@
 import time
-from utils.gerador import gerar_aleatorio, gerar_quase_ordenado, gerar_invertido
-from utils.contador import ContadorInstrumentacao
-from analisador.caracteristicas import analisar_propriedades_array
-from analisador.motor_decisao import selecionar_melhor_algoritmo
 
-# Imports de Ordenação
-from algoritmos.ordenacao.insertion_sort import insertion_sort
-from algoritmos.ordenacao.selection_sort import selection_sort
-from algoritmos.ordenacao.bubble_sort import bubble_sort
-from algoritmos.ordenacao.merge_sort import merge_sort
-from algoritmos.ordenacao.quick_sort import quick_sort
-from algoritmos.ordenacao.heap_sort import heap_sort
-
-# Imports de Busca
-from algoritmos.busca.busca_sequencial import busca_sequencial
 from algoritmos.busca.busca_binaria import busca_binaria
 from algoritmos.busca.busca_hash import busca_hash
+from algoritmos.busca.busca_sequencial import busca_sequencial
+from algoritmos.ordenacao.bubble_sort import bubble_sort
+from algoritmos.ordenacao.heap_sort import heap_sort
+from algoritmos.ordenacao.insertion_sort import insertion_sort
+from algoritmos.ordenacao.merge_sort import merge_sort
+from algoritmos.ordenacao.quick_sort import quick_sort
+from algoritmos.ordenacao.selection_sort import selection_sort
+from analisador.caracteristicas import analisar_propriedades_array
+from analisador.motor_decisao import selecionar_melhor_algoritmo
+from utils.contador import ContadorInstrumentacao
+from utils.gerador import gerar_aleatorio, gerar_invertido, gerar_quase_ordenado
+
 
 def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, objetivo="ordenar"):
     print("=" * 65)
@@ -83,7 +81,10 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, objetivo="ord
             metricas = contador.obter_resultados()
             sinalizador = " <- [RECOMENDADO]" if nome == decisao["recomendado"] else ""
             print(f"[{nome}]{sinalizador}")
-            print(f"   Tempo: {(tempo_fim - tempo_inicio):.5f}s | Comparações: {metricas['comparacoes']} | Trocas: {metricas['trocas']}")
+            print(
+                f"   Tempo: {(tempo_fim - tempo_inicio):.5f}s | "
+                f"Comparações: {metricas['comparacoes']} | Trocas: {metricas['trocas']}"
+            )
             print("." * 40)
             
     elif objetivo == "buscar":
@@ -93,7 +94,8 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, objetivo="ord
             "Busca Hash": busca_hash
         }
         
-        # Define um elemento alvo realista para buscar (o elemento que está no meio do array)
+        # Define um elemento alvo realista para buscar
+        # (o elemento que está no meio do array)
         alvo = array_dados[len(array_dados) // 2]
         
         for nome, funcao in algoritmos.items():
@@ -107,8 +109,12 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, objetivo="ord
             metricas = contador.obter_resultados()
             sinalizador = " <- [RECOMENDADO]" if nome == decisao["recomendado"] else ""
             print(f"[{nome}]{sinalizador}")
-            # Em busca não existem "Trocas" (swaps), por isso printamos apenas iterações/comparações
-            print(f"   Tempo: {(tempo_fim - tempo_inicio):.6f}s | Comparações/Acessos: {metricas['comparacoes']}")
+            # Em busca não existem "Trocas" (swaps), por isso printamos apenas
+            # iterações/comparações.
+            print(
+                f"   Tempo: {(tempo_fim - tempo_inicio):.6f}s | "
+                f"Comparações/Acessos: {metricas['comparacoes']}"
+            )
             print("." * 40)
             
     print("\n\n")
@@ -120,31 +126,75 @@ def executar_diagnostico_sistema():
     # TESTES DE ORDENAÇÃO
     # ==========================================
     array_1 = gerar_aleatorio(tamanho)
-    rodar_um_teste("VETOR PADRÃO ALEATÓRIO", array_1, memoria=False, estabilidade=False, objetivo="ordenar")
+    rodar_um_teste(
+        "VETOR PADRÃO ALEATÓRIO",
+        array_1,
+        memoria=False,
+        estabilidade=False,
+        objetivo="ordenar",
+    )
     
     array_2 = gerar_invertido(tamanho)
-    rodar_um_teste("VETOR INVERTIDO COM RESTRIÇÃO DE MEMÓRIA", array_2, memoria=True, estabilidade=False, objetivo="ordenar")
+    rodar_um_teste(
+        "VETOR INVERTIDO COM RESTRIÇÃO DE MEMÓRIA",
+        array_2,
+        memoria=True,
+        estabilidade=False,
+        objetivo="ordenar",
+    )
     
     array_3 = gerar_quase_ordenado(tamanho)
-    rodar_um_teste("VETOR QUASE ORDENADO", array_3, memoria=False, estabilidade=False, objetivo="ordenar")
+    rodar_um_teste(
+        "VETOR QUASE ORDENADO",
+        array_3,
+        memoria=False,
+        estabilidade=False,
+        objetivo="ordenar",
+    )
     
     array_4 = gerar_aleatorio(tamanho)
-    rodar_um_teste("EXIGÊNCIA DE ESTABILIDADE NO BENCHMARK", array_4, memoria=False, estabilidade=True, objetivo="ordenar")
+    rodar_um_teste(
+        "EXIGÊNCIA DE ESTABILIDADE NO BENCHMARK",
+        array_4,
+        memoria=False,
+        estabilidade=True,
+        objetivo="ordenar",
+    )
 
     # ==========================================
     # TESTES DE BUSCA (NOVOS)
     # ==========================================
     # Cenário 5: Busca em Vetor NÃO ordenado (Deve banir Busca Binária)
-    array_5 = gerar_aleatorio(tamanho) 
-    rodar_um_teste("BUSCA EM DADOS NÃO ORDENADOS", array_5, memoria=False, estabilidade=False, objetivo="buscar")
+    array_5 = gerar_aleatorio(tamanho)
+    rodar_um_teste(
+        "BUSCA EM DADOS NÃO ORDENADOS",
+        array_5,
+        memoria=False,
+        estabilidade=False,
+        objetivo="buscar",
+    )
     
     # Cenário 6: Busca em Vetor Ordenado (Perfeito para Busca Binária)
-    array_6 = sorted(gerar_aleatorio(tamanho)) # Garantimos que o grau_ordenacao seja 0.0
-    rodar_um_teste("BUSCA EM VETOR 100% ORDENADO", array_6, memoria=False, estabilidade=False, objetivo="buscar")
+    # Garantimos que o grau_ordenacao seja 0.0.
+    array_6 = sorted(gerar_aleatorio(tamanho))
+    rodar_um_teste(
+        "BUSCA EM VETOR 100% ORDENADO",
+        array_6,
+        memoria=False,
+        estabilidade=False,
+        objetivo="buscar",
+    )
 
-    # Cenário 7: Busca em Vetor Ordenado com Restrição de Memória (Bane/Penaliza Hash)
+    # Cenário 7: Busca em Vetor Ordenado com Restrição de Memória
+    # (Bane/Penaliza Hash).
     array_7 = sorted(gerar_aleatorio(tamanho))
-    rodar_um_teste("BUSCA COM RESTRIÇÃO SEVERA DE MEMÓRIA", array_7, memoria=True, estabilidade=False, objetivo="buscar")
+    rodar_um_teste(
+        "BUSCA COM RESTRIÇÃO SEVERA DE MEMÓRIA",
+        array_7,
+        memoria=True,
+        estabilidade=False,
+        objetivo="buscar",
+    )
 
 if __name__ == "__main__":
     executar_diagnostico_sistema()
