@@ -3,30 +3,26 @@ from analisador.motor_decisao import selecionar_melhor_algoritmo
 from analisador.questionario import executar_questionario
 from analisador.recommendation import gerar_relatorio_recomendacao
 from utils.benchmark import rodar_benchmarks_gerais
-from utils.gerador import gerar_aleatorio, gerar_invertido, gerar_quase_ordenado
 
 
-def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"):
-    print("=" * 65)
-    print(f" CASO DE TESTE: {nome_teste} ")
+def executar_analise_array(array_dados, objetivo, modo="direto"):
+    print("\n" + "=" * 65)
+    print(f" ANÁLISE DE ARRAY INFORMADO - OBJETIVO: {objetivo.upper()} ")
     print("=" * 65 + "\n")
 
-    # Passamos uma cópia para a análise não gerar subprodutos no array original
     propriedades = analisar_propriedades_array(
         arr=array_dados.copy(),
-        objetivo="ordenar",
-        restricao_memoria=memoria,
-        precisa_estabilidade=estabilidade,
+        objetivo=objetivo,
+        restricao_memoria=False,
+        precisa_estabilidade=False,
     )
 
-    print("--- [CAMADA 1: METADADOS DO VETOR] ---")
+    print("--- [ METADADOS DO VETOR ] ---")
     print(f"• Tamanho do array: {propriedades['tamanho']}")
     print(f"• Grau de ordenação (Inversões): {propriedades['grau_ordenacao']}")
     print(f"• Percentual de duplicatas: {propriedades['percentual_duplicatas']}%")
     print(f"• Amplitude dos valores: {propriedades['amplitude']}")
     print(f"• Tipo dos dados: {propriedades['tipo_dados']}")
-    print(f"• Restrições de memória ativas? {propriedades['restricao_memoria']}")
-    print(f"• Necessidade de estabilidade? {propriedades['precisa_estabilidade']}")
     print(f"• Objetivo da operação: {propriedades['objetivo'].upper()}\n")
 
     decisao = selecionar_melhor_algoritmo(propriedades)
@@ -40,70 +36,53 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"
         print("\n\n")
 
 
-def executar_diagnostico_sistema():
-    tamanho = 1000
+def ler_array_usuario():
+    while True:
+        entrada = input(
+            "\nDigite os valores do array separados por vírgula "
+            "(ex: 10, 3, 7, 1): "
+        ).strip()
 
-    array_1 = gerar_aleatorio(tamanho)
-    rodar_um_teste(
-        "VETOR PADRÃO ALEATÓRIO (DIRETO)",
-        array_1,
-        memoria=False,
-        estabilidade=False,
-        modo="direto",
-    )
+        if not entrada:
+            print("[!] O array não pode estar vazio.")
+            continue
 
-    array_2 = gerar_invertido(tamanho)
-    rodar_um_teste(
-        "VETOR INVERTIDO COM RESTRIÇÃO DE MEMÓRIA (DIRETO)",
-        array_2,
-        memoria=True,
-        estabilidade=False,
-        modo="direto",
-    )
-
-    array_3 = gerar_quase_ordenado(tamanho)
-    rodar_um_teste(
-        "VETOR QUASE ORDENADO (DIRETO)",
-        array_3,
-        memoria=False,
-        estabilidade=False,
-        modo="direto",
-    )
-
-    array_4 = gerar_aleatorio(tamanho)
-    rodar_um_teste(
-        "EXIGÊNCIA DE ESTABILIDADE NO BECHMARK (DETALHADO)",
-        array_4,
-        memoria=False,
-        estabilidade=True,
-        modo="detalhado",
-    )
+        try:
+            return [int(valor.strip()) for valor in entrada.split(",") if valor.strip()]
+        except ValueError:
+            print(
+                "[!] Entrada inválida. Digite apenas números inteiros "
+                "separados por vírgula."
+            )
 
 
-def rodar_teste_declarado(propriedades):
+def perguntar_objetivo():
+    while True:
+        print("\nO que você deseja fazer com este array?")
+        print("1. Ordenar os dados")
+        print("2. Buscar um valor específico")
+        opcao = input("Opção (1/2): ").strip()
+        
+        if opcao == "1":
+            return "ordenar"
+        elif opcao == "2":
+            return "buscar"
+        
+        print("[!] Opção inválida. Digite 1 ou 2.")
+
+
+def executar_analise_questionario(propriedades):
     print("=" * 65)
-    print(" CASO DE TESTE: QUESTIONÁRIO (ENTRADA DECLARADA) ")
+    print(" ANÁLISE BASEADA NO QUESTIONÁRIO ")
     print("=" * 65 + "\n")
 
-    print("--- [CAMADA 1: METADADOS DECLARADOS] ---")
+    print("--- [ METADADOS DECLARADOS ] ---")
     print(f"• Tamanho estimado: {propriedades['tamanho']}")
-    print(
-        f"• Grau de ordenação (Inversões aproximadas): {propriedades['grau_ordenacao']}"
-    )
+    print(f"• Grau de ordenação (Inversões aproximadas): {propriedades['grau_ordenacao']}")
     print(f"• Percentual de duplicatas: {propriedades['percentual_duplicatas']}%")
     print(f"• Tipo dos dados: {propriedades.get('tipo_dados', 'int')}")
-    print(
-        (
-            f"• Restrições de memória ativas? "
-            f"{propriedades.get('restricao_memoria', False)}"
-        )
-    )
-    print(
-        (
-            f"• Necessidade de estabilidade? "
-            f"{propriedades.get('precisa_estabilidade', False)}"
-        )
-    )
+    print(f"• Restrições de memória ativas? {propriedades.get('restricao_memoria', False)}")
+    print(f"• Necessidade de estabilidade? {propriedades.get('precisa_estabilidade', False)}")
     print(f"• Objetivo da operação: {propriedades.get('objetivo', 'ordenar').upper()}")
     print(f"• Dados em disco/paginação? {propriedades.get('dados_em_disco', False)}")
     print(f"• Busca frequente? {propriedades.get('busca_frequente', False)}\n")
@@ -112,46 +91,36 @@ def rodar_teste_declarado(propriedades):
 
     print(gerar_relatorio_recomendacao(decisao))
     print("\n" + "-" * 65 + "\n")
-    print(
-        (
-            "[!] O Benchmark empírico foi ignorado pois "
-            "não há array real (Modo Declarado).\n\n"
-        )
-    )
 
 
 def menu_principal():
     print("=" * 65)
     print(" BEM-VINDO AO SELETOR ADAPTATIVO DE ALGORITMOS ")
     print("=" * 65)
-    print("Escolha o modo de execução para a demonstração:")
-    print("1. Modo Direto (Apenas recomendação baseada em análise)")
-    print("2. Modo Detalhado (Recomendação + Benchmark Empírico completo)")
-    print("3. Rodar Bateria de Testes de Diagnóstico (Misto)")
-    print("4. Modo Questionário (Responder perguntas sobre o problema)")
+    print("Como você deseja informar os dados para análise?")
+    print("1. Digitar o array manualmente (Análise Direta)")
+    print("2. Digitar o array manualmente (Análise + Benchmark/Tempo)")
+    print("3. Responder o Questionário (Não tenho o array em mãos)")
 
-    opcao = input("Opção (1/2/3/4): ").strip()
+    opcao = input("\nOpção (1/2/3): ").strip()
 
-    if opcao == "4":
+    if opcao == "3":
         propriedades_declaradas = executar_questionario()
-        rodar_teste_declarado(propriedades_declaradas)
+        executar_analise_questionario(propriedades_declaradas)
     elif opcao in ["1", "2"]:
         modo = "detalhado" if opcao == "2" else "direto"
-        print(
-            (
-                "\n[!] Gerando um array aleatório de exemplo "
-                "para a demonstração interativa..."
-            )
-        )
-        tamanho_exemplo = 1500
-        array_ex = gerar_aleatorio(tamanho_exemplo)
-        rodar_um_teste(
-            "TESTE DE DEMONSTRAÇÃO INTERATIVA",
-            array_ex,
-            memoria=False,
-            estabilidade=False,
-            modo=modo,
-        )
+        
+        # 1º: Pega o array do usuário
+        array_usuario = ler_array_usuario()
+        
+        # 2º: Pergunta o que ele quer fazer (ordenar ou buscar)
+        objetivo_usuario = perguntar_objetivo()
+        
+        # 3º: Roda a análise passando o array e o objetivo corretos
+        executar_analise_array(array_usuario, objetivo=objetivo_usuario, modo=modo)
     else:
-        print("\n[!] Iniciando bateria de testes de diagnóstico interno...\n")
-        executar_diagnostico_sistema()
+        print("\n[!] Opção inválida.")
+
+
+if __name__ == "__main__":
+    menu_principal()
