@@ -1,16 +1,8 @@
-import time
 from utils.gerador import gerar_aleatorio, gerar_quase_ordenado, gerar_invertido
-from utils.contador import ContadorInstrumentacao
+from utils.benchmark import rodar_benchmarks_gerais
 from analisador.caracteristicas import analisar_propriedades_array
 from analisador.motor_decisao import selecionar_melhor_algoritmo
 from analisador.questionario import executar_questionario
-
-from algoritmos.ordenacao.insertion_sort import insertion_sort
-from algoritmos.ordenacao.selection_sort import selection_sort
-from algoritmos.ordenacao.bubble_sort import bubble_sort
-from algoritmos.ordenacao.merge_sort import merge_sort
-from algoritmos.ordenacao.quick_sort import quick_sort
-from algoritmos.ordenacao.heap_sort import heap_sort
 
 def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"):
     print("=" * 65)
@@ -56,34 +48,7 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"
     print("\n" + "-"*65 + "\n")
     
     if modo == "detalhado":
-        print("--- [CAMADA 3: BENCHMARK GERAL DE VALIDAÇÃO] ---")
-        algoritmos_ordenacao = {
-            "Insertion Sort": insertion_sort,
-            "Selection Sort": selection_sort,
-            "Bubble Sort": bubble_sort,
-            "Merge Sort": merge_sort,
-            "Quick Sort": quick_sort,
-            "Heap Sort": heap_sort
-        }
-        
-        for nome, funcao in algoritmos_ordenacao.items():
-            contador = ContadorInstrumentacao()
-            
-            # CORREÇÃO CRÍTICA: Cada algoritmo recebe uma cópia idêntica e ISOLADA do array original
-            array_copia = array_dados.copy()
-            
-            tempo_inicio = time.perf_counter()
-            array_resultado = funcao(array_copia, contador)
-            tempo_fim = time.perf_counter()
-            
-            tempo_total = tempo_fim - tempo_inicio
-            metricas = contador.obter_resultados()
-            
-            sinalizador = " <- [RECOMENDADO]" if nome == decisao["recomendado"] else ""
-            print(f"[{nome}]{sinalizador}")
-            print(f"   Tempo: {tempo_total:.5f}s | Comparações: {metricas['comparacoes']} | Trocas: {metricas['trocas']}")
-            print("." * 40)
-        print("\n\n")
+        rodar_benchmarks_gerais(array_dados, decisao["recomendado"])
     else:
         print("\n\n")
 
