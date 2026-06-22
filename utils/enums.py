@@ -1,13 +1,26 @@
-
 from enum import Enum
 
-class ComplexidadeTempo(Enum):
-    O_1 = "O(1)"
-    O_LOG_N = "O(log n)"
-    O_N = "O(n)"
-    O_N_LOG_N = "O(n log n)"
-    O_N2 = "O(n^2)"
+class Objetivo(Enum):
+    ORDENAR = "ordenar"
+    BUSCAR = "buscar"
 
-class CategoriaAlgoritmo(Enum):
-    ORDENACAO = "Ordenação"
-    BUSCA = "Busca"
+class OrigemMetricas(Enum):
+    DECLARADA = "Declarada"
+    MEDIDA = "Medida"
+
+class TipoDados(Enum):
+    INT = "int"
+    OBJECT = "object"
+
+class AlgoritmoBusca(Enum):
+    SEQUENCIAL = "Busca Sequencial"
+    BINARIA = "Busca Binária"
+    HASH = "Busca Hash"
+
+class AlgoritmoOrdenacao(Enum):
+    INSERTION = "Insertion Sort"
+    SELECTION = "Selection Sort"
+    BUBBLE = "Bubble Sort"
+    MERGE = "Merge Sort"
+    QUICK = "Quick Sort"
+    HEAP = "Heap Sort"

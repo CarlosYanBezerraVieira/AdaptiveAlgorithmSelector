@@ -1,18 +1,20 @@
+from utils.enums import Objetivo, OrigemMetricas, TipoDados
+
 def executar_questionario():
     print("=" * 65)
     print(" QUESTIONÁRIO DE ANÁLISE DECLARADA ")
     print("=" * 65)
     
     propriedades = {
-        "origem": "Declarada",
+        "origem": OrigemMetricas.DECLARADA.value,
         "tamanho": 1000,
         "grau_ordenacao": 0.5,
         "percentual_duplicatas": 0.0,
         "amplitude": 1000,
-        "tipo_dados": "int",
+        "tipo_dados": TipoDados.INT.value,
         "restricao_memoria": False,
         "precisa_estabilidade": False,
-        "objetivo": "ordenar",
+        "objetivo": Objetivo.ORDENAR.value,
         "dados_em_disco": False,
         "busca_frequente": False
     }
@@ -21,7 +23,7 @@ def executar_questionario():
     print("   [1] Ordenar dados")
     print("   [2] Buscar um dado")
     obj = input("-> ")
-    propriedades["objetivo"] = "buscar" if obj == "2" else "ordenar"
+    propriedades["objetivo"] = Objetivo.BUSCAR.value if obj == "2" else Objetivo.ORDENAR.value
 
     print("\n2. Qual é a estimativa do número de elementos?")
     print("   [1] Pequeno (até 100)")
@@ -32,7 +34,7 @@ def executar_questionario():
     elif tam == "3": propriedades["tamanho"] = 100000
     else: propriedades["tamanho"] = 5000
 
-    if propriedades["objetivo"] == "ordenar":
+    if propriedades["objetivo"] == Objetivo.ORDENAR.value:
         print("\n3. Como você descreveria a desordem atual dos dados?")
         print("   [1] Quase ordenados")
         print("   [2] Totalmente aleatórios")
@@ -52,7 +54,7 @@ def executar_questionario():
     dup = input("   [S] Sim / [N] Não -> ").strip().upper()
     if dup == 'S': propriedades["percentual_duplicatas"] = 50.0
 
-    if propriedades["objetivo"] == "ordenar":
+    if propriedades["objetivo"] == Objetivo.ORDENAR.value:
         print("\n5. A estabilidade do algoritmo é obrigatória? (Manter a ordem original de itens iguais)")
         est = input("   [S] Sim / [N] Não -> ").strip().upper()
         if est == 'S': propriedades["precisa_estabilidade"] = True
@@ -65,9 +67,9 @@ def executar_questionario():
     print("   [1] Simples")
     print("   [2] Complexos")
     tipo = input("-> ")
-    if tipo == "2": propriedades["tipo_dados"] = "object"
+    if tipo == "2": propriedades["tipo_dados"] = TipoDados.OBJECT.value
 
-    if propriedades["objetivo"] == "ordenar":
+    if propriedades["objetivo"] == Objetivo.ORDENAR.value:
         print("\n8. Os dados cabem inteiramente na memória RAM ou vêm de um arquivo enorme (disco)?")
         print("   [1] Cabem na RAM")
         print("   [2] Vêm de um arquivo gigante (Paginação)")

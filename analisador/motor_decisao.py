@@ -1,78 +1,102 @@
+from utils.constants import (
+    PONTUACAO_BANIDO, PONTUACAO_CORTE_ALTERNATIVA,
+    LIMITE_TAMANHO_BUSCA_PEQUENA, LIMITE_TAMANHO_ORDENACAO_MEDIO,
+    LIMITE_TAMANHO_QUASE_ORDENADO, GRAU_QUASE_ORDENADO_IDEAL,
+    GRAU_QUASE_ORDENADO_LIMITE_INSERTION, GRAU_INVERSAO_ALTO_QUICK,
+    GRAU_ALTAMENTE_INVERTIDO,
+    SCORE_BASE_BUSCA_SEQUENCIAL, SCORE_BASE_BUSCA_BINARIA, SCORE_BASE_BUSCA_HASH,
+    SCORE_BASE_INSERTION, SCORE_BASE_SELECTION, SCORE_BASE_BUBBLE,
+    SCORE_BASE_MERGE, SCORE_BASE_QUICK, SCORE_BASE_HEAP
+)
+from utils.enums import Objetivo, OrigemMetricas, TipoDados, AlgoritmoBusca, AlgoritmoOrdenacao
+
 def selecionar_melhor_algoritmo(propriedades):
     tamanho = propriedades.get("tamanho", 0)
     grau_ordenacao = propriedades.get("grau_ordenacao", 0.0)
     percentual_duplicatas = propriedades.get("percentual_duplicatas", 0.0)
     restricao_memoria = propriedades.get("restricao_memoria", False)
     precisa_estabilidade = propriedades.get("precisa_estabilidade", False)
-    objetivo = propriedades.get("objetivo", "ordenar")
+    objetivo = propriedades.get("objetivo", Objetivo.ORDENAR.value)
     
     # Novos parâmetros do Modo Questionário
-    origem = propriedades.get("origem", "Medida")
-    tipo_dados = propriedades.get("tipo_dados", "int")
+    origem = propriedades.get("origem", OrigemMetricas.MEDIDA.value)
+    tipo_dados = propriedades.get("tipo_dados", TipoDados.INT.value)
     dados_em_disco = propriedades.get("dados_em_disco", False)
     busca_frequente = propriedades.get("busca_frequente", False)
     
-    confianca = "Média (Baseada em Respostas)" if origem == "Declarada" else "Alta (Baseada em Array Real)"
+    confianca = "Média (Baseada em Respostas)" if origem == OrigemMetricas.DECLARADA.value else "Alta (Baseada em Array Real)"
 
     # =================================================================
     # FLUXO DE DECISÃO: BUSCA
     # =================================================================
-    if objetivo == "buscar":
+    if objetivo == Objetivo.BUSCAR.value:
         # Base de pontuação inicial para algoritmos de busca
-        pontuacao = {"Busca Sequencial": 50, "Busca Binária": 40, "Busca Hash": 60}
+        pontuacao = {
+            AlgoritmoBusca.SEQUENCIAL.value: SCORE_BASE_BUSCA_SEQUENCIAL, 
+            AlgoritmoBusca.BINARIA.value: SCORE_BASE_BUSCA_BINARIA, 
+            AlgoritmoBusca.HASH.value: SCORE_BASE_BUSCA_HASH
+        }
         
         # RESTRIÇÃO RÍGIDA: Busca Binária EXIGE ordenação absoluta (grau deve ser estritamente 0.0)
         if grau_ordenacao > 0.0:
-            pontuacao["Busca Binária"] = -1000  # Banida por violação de pré-requisito matemático
+            pontuacao[AlgoritmoBusca.BINARIA.value] = PONTUACAO_BANIDO  # Banida por violação de pré-requisito matemático
         else:
-            pontuacao["Busca Binária"] += 50    # Altamente recomendada se o vetor estiver ordenado
+            pontuacao[AlgoritmoBusca.BINARIA.value] += 50    # Altamente recomendada se o vetor estiver ordenado
             
         # Restrição de Memória afeta a Busca Hash (tabelas hash exigem overhead de espaço)
         if restricao_memoria:
-            pontuacao["Busca Hash"] -= 40
+            pontuacao[AlgoritmoBusca.HASH.value] -= 40
             
         # Nova Regra: Frequência de Busca
         if busca_frequente:
-            pontuacao["Busca Binária"] += 20
-            pontuacao["Busca Hash"] += 20
-            pontuacao["Busca Sequencial"] -= 30
-        elif origem == "Declarada" and not busca_frequente:
-            pontuacao["Busca Sequencial"] += 30
+            pontuacao[AlgoritmoBusca.BINARIA.value] += 20
+            pontuacao[AlgoritmoBusca.HASH.value] += 20
+            pontuacao[AlgoritmoBusca.SEQUENCIAL.value] -= 30
+        elif origem == OrigemMetricas.DECLARADA.value and not busca_frequente:
+            pontuacao[AlgoritmoBusca.SEQUENCIAL.value] += 30
             
         # Vetores muito pequenos dispensam estruturas complexas ou ordenação prévia
-        if tamanho < 30:
-            pontuacao["Busca Sequencial"] += 40
-            if pontuacao["Busca Hash"] > -100:
-                pontuacao["Busca Hash"] -= 20
+        if tamanho < LIMITE_TAMANHO_BUSCA_PEQUENA:
+            pontuacao[AlgoritmoBusca.SEQUENCIAL.value] += 40
+            if pontuacao[AlgoritmoBusca.HASH.value] > PONTUACAO_BANIDO:
+                pontuacao[AlgoritmoBusca.HASH.value] -= 20
         else:
             # Penalização por tempo linear O(n) para busca sequencial em tamanhos maiores
             penalidade_n = min(60, tamanho // 100)
-            if pontuacao["Busca Sequencial"] > -100:
-                pontuacao["Busca Sequencial"] -= penalidade_n
+            if pontuacao[AlgoritmoBusca.SEQUENCIAL.value] > PONTUACAO_BANIDO:
+                pontuacao[AlgoritmoBusca.SEQUENCIAL.value] -= penalidade_n
             
         # Determinação do vencedor e filtragem de alternativas válidas (não banidas)
         melhor = max(pontuacao, key=pontuacao.get)
-        alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > -500]
+        alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > PONTUACAO_CORTE_ALTERNATIVA]
         alternativas = sorted(alternativas, key=lambda x: pontuacao[x], reverse=True)[:2]
         
-        complexidades = {"Busca Sequencial": "O(n)", "Busca Binária": "O(log n)", "Busca Hash": "O(1)"}
-        metadados_memoria = {"Busca Sequencial": "O(1)", "Busca Binária": "O(1)", "Busca Hash": "O(n)"}
+        complexidades = {
+            AlgoritmoBusca.SEQUENCIAL.value: "O(n)", 
+            AlgoritmoBusca.BINARIA.value: "O(log n)", 
+            AlgoritmoBusca.HASH.value: "O(1)"
+        }
+        metadados_memoria = {
+            AlgoritmoBusca.SEQUENCIAL.value: "O(1)", 
+            AlgoritmoBusca.BINARIA.value: "O(1)", 
+            AlgoritmoBusca.HASH.value: "O(n)"
+        }
         
         # Geração de Justificativas Dinâmicas e Coerentes baseadas em Metadados
         justificativas = []
         avisos = []
         
-        if melhor == "Busca Hash":
+        if melhor == AlgoritmoBusca.HASH.value:
             justificativas.append("Permite indexação direta com tempo de busca constante O(1).")
             justificativas.append("Ideal para máxima eficiência computacional quando há memória disponível.")
             if restricao_memoria:
                 avisos.append("Aviso: A tabela hash consome memória extra para o mapeamento de chaves.")
                 
-        elif melhor == "Busca Binária":
+        elif melhor == AlgoritmoBusca.BINARIA.value:
             justificativas.append(f"O vetor está perfeitamente ordenado (Grau de inversão: {grau_ordenacao}).")
             justificativas.append("Reduz o espaço de busca de forma logarítmica a cada iteração.")
             
-        elif melhor == "Busca Sequencial":
+        elif melhor == AlgoritmoBusca.SEQUENCIAL.value:
             if grau_ordenacao > 0.0:
                 justificativas.append(f"O vetor está desordenado (Grau de inversão: {grau_ordenacao}), tornando a busca binária inviável.")
             else:
@@ -97,128 +121,132 @@ def selecionar_melhor_algoritmo(propriedades):
     else:
         # 1. Base de pontuação inicial equilibrada
         pontuacao = {
-            "Insertion Sort": 30, "Selection Sort": 25, "Bubble Sort": 20,
-            "Merge Sort": 50, "Quick Sort": 55, "Heap Sort": 45
+            AlgoritmoOrdenacao.INSERTION.value: SCORE_BASE_INSERTION, 
+            AlgoritmoOrdenacao.SELECTION.value: SCORE_BASE_SELECTION, 
+            AlgoritmoOrdenacao.BUBBLE.value: SCORE_BASE_BUBBLE,
+            AlgoritmoOrdenacao.MERGE.value: SCORE_BASE_MERGE, 
+            AlgoritmoOrdenacao.QUICK.value: SCORE_BASE_QUICK, 
+            AlgoritmoOrdenacao.HEAP.value: SCORE_BASE_HEAP
         }
         
         # 2. RESTRIÇÕES RÍGIDAS (HARD CONSTRAINTS) - BANIMENTOS ABSOLUTOS
         
         # Se exige ESTABILIDADE, bane algoritmos inerentemente instáveis
         if precisa_estabilidade:
-            pontuacao["Quick Sort"] = -1000
-            pontuacao["Heap Sort"] = -1000
-            pontuacao["Selection Sort"] = -1000
+            pontuacao[AlgoritmoOrdenacao.QUICK.value] = PONTUACAO_BANIDO
+            pontuacao[AlgoritmoOrdenacao.HEAP.value] = PONTUACAO_BANIDO
+            pontuacao[AlgoritmoOrdenacao.SELECTION.value] = PONTUACAO_BANIDO
             
-            pontuacao["Merge Sort"] += 40
-            pontuacao["Insertion Sort"] += 10
+            pontuacao[AlgoritmoOrdenacao.MERGE.value] += 40
+            pontuacao[AlgoritmoOrdenacao.INSERTION.value] += 10
 
         # Se há RESTRIÇÃO DE MEMÓRIA, bane o Merge Sort (alocação auxiliar O(n))
         if restricao_memoria:
-            pontuacao["Merge Sort"] = -1000
+            pontuacao[AlgoritmoOrdenacao.MERGE.value] = PONTUACAO_BANIDO
             
             # Valoriza alternativas estáveis em espaço (In-place)
-            if pontuacao["Heap Sort"] > -100:
-                pontuacao["Heap Sort"] += 30
-            if pontuacao["Quick Sort"] > -100 and grau_ordenacao < 0.70:
-                pontuacao["Quick Sort"] += 15
+            if pontuacao[AlgoritmoOrdenacao.HEAP.value] > PONTUACAO_BANIDO:
+                pontuacao[AlgoritmoOrdenacao.HEAP.value] += 30
+            if pontuacao[AlgoritmoOrdenacao.QUICK.value] > PONTUACAO_BANIDO and grau_ordenacao < GRAU_INVERSAO_ALTO_QUICK:
+                pontuacao[AlgoritmoOrdenacao.QUICK.value] += 15
 
         # Nova Regra: Dados em Disco (Paginação)
         if dados_em_disco:
-            if pontuacao["Merge Sort"] > -100:
-                pontuacao["Merge Sort"] += 150 # Merge Sort brilha em ordenação externa
-            if pontuacao["Quick Sort"] > -100: pontuacao["Quick Sort"] -= 80 # Péssimo com paginação
-            if pontuacao["Heap Sort"] > -100: pontuacao["Heap Sort"] -= 80
+            if pontuacao[AlgoritmoOrdenacao.MERGE.value] > PONTUACAO_BANIDO:
+                pontuacao[AlgoritmoOrdenacao.MERGE.value] += 150 # Merge Sort brilha em ordenação externa
+            if pontuacao[AlgoritmoOrdenacao.QUICK.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.QUICK.value] -= 80 # Péssimo com paginação
+            if pontuacao[AlgoritmoOrdenacao.HEAP.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.HEAP.value] -= 80
 
         # Penalização progressiva por tempo de execução baseada no tamanho
-        if tamanho > 100:
+        if tamanho > LIMITE_TAMANHO_ORDENACAO_MEDIO:
             # Deduz até 100 pontos dependendo do quão grande o array é para algoritmos O(n²)
             penalidade_n2 = min(100, tamanho // 50) 
-            if pontuacao["Selection Sort"] > -100: pontuacao["Selection Sort"] -= penalidade_n2
-            if pontuacao["Bubble Sort"] > -100:    pontuacao["Bubble Sort"] -= penalidade_n2
+            if pontuacao[AlgoritmoOrdenacao.SELECTION.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.SELECTION.value] -= penalidade_n2
+            if pontuacao[AlgoritmoOrdenacao.BUBBLE.value] > PONTUACAO_BANIDO:    pontuacao[AlgoritmoOrdenacao.BUBBLE.value] -= penalidade_n2
             
             # Insertion Sort sofre penalidade O(n²) se não estiver quase ordenado
-            if pontuacao["Insertion Sort"] > -100 and grau_ordenacao > 0.12:
-                pontuacao["Insertion Sort"] -= penalidade_n2
+            if pontuacao[AlgoritmoOrdenacao.INSERTION.value] > PONTUACAO_BANIDO and grau_ordenacao > GRAU_QUASE_ORDENADO_LIMITE_INSERTION:
+                pontuacao[AlgoritmoOrdenacao.INSERTION.value] -= penalidade_n2
 
             # Algoritmos O(n log n) também têm uma penalidade levíssima pelo tempo, mas muito menor
             penalidade_nlogn = min(15, tamanho // 1000)
-            if pontuacao["Merge Sort"] > -100: pontuacao["Merge Sort"] -= penalidade_nlogn
-            if pontuacao["Quick Sort"] > -100: pontuacao["Quick Sort"] -= penalidade_nlogn
-            if pontuacao["Heap Sort"] > -100: pontuacao["Heap Sort"] -= penalidade_nlogn
+            if pontuacao[AlgoritmoOrdenacao.MERGE.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.MERGE.value] -= penalidade_nlogn
+            if pontuacao[AlgoritmoOrdenacao.QUICK.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.QUICK.value] -= penalidade_nlogn
+            if pontuacao[AlgoritmoOrdenacao.HEAP.value] > PONTUACAO_BANIDO: pontuacao[AlgoritmoOrdenacao.HEAP.value] -= penalidade_nlogn
 
         # 3. ANÁLISE DE CENÁRIOS CONTEXTUAIS (DESEMPENHO PRÁTICO)
         
         # CENÁRIO A: Vetor Quase Ordenado
-        if grau_ordenacao <= 0.10 and tamanho <= 2000:
-            if pontuacao["Insertion Sort"] > -100:
-                pontuacao["Insertion Sort"] += 100
-            if pontuacao["Quick Sort"] > -100:   pontuacao["Quick Sort"] -= 20
-            if pontuacao["Heap Sort"] > -100:    pontuacao["Heap Sort"] -= 20
+        if grau_ordenacao <= GRAU_QUASE_ORDENADO_IDEAL and tamanho <= LIMITE_TAMANHO_QUASE_ORDENADO:
+            if pontuacao[AlgoritmoOrdenacao.INSERTION.value] > PONTUACAO_BANIDO:
+                pontuacao[AlgoritmoOrdenacao.INSERTION.value] += 100
+            if pontuacao[AlgoritmoOrdenacao.QUICK.value] > PONTUACAO_BANIDO:   pontuacao[AlgoritmoOrdenacao.QUICK.value] -= 20
+            if pontuacao[AlgoritmoOrdenacao.HEAP.value] > PONTUACAO_BANIDO:    pontuacao[AlgoritmoOrdenacao.HEAP.value] -= 20
 
         # CENÁRIO B: Vetor Altamente Invertido (Pior caso do Quick Sort clássico)
-        elif grau_ordenacao >= 0.85:
-            if pontuacao["Heap Sort"] > -100:    pontuacao["Heap Sort"] += 25
-            if pontuacao["Merge Sort"] > -100:   pontuacao["Merge Sort"] += 15
-            if pontuacao["Quick Sort"] > -100:   pontuacao["Quick Sort"] -= 25
-            if pontuacao["Insertion Sort"] > -100: 
-                pontuacao["Insertion Sort"] -= 100 # Penalidade severa: Pior caso O(n²) real
+        elif grau_ordenacao >= GRAU_ALTAMENTE_INVERTIDO:
+            if pontuacao[AlgoritmoOrdenacao.HEAP.value] > PONTUACAO_BANIDO:    pontuacao[AlgoritmoOrdenacao.HEAP.value] += 25
+            if pontuacao[AlgoritmoOrdenacao.MERGE.value] > PONTUACAO_BANIDO:   pontuacao[AlgoritmoOrdenacao.MERGE.value] += 15
+            if pontuacao[AlgoritmoOrdenacao.QUICK.value] > PONTUACAO_BANIDO:   pontuacao[AlgoritmoOrdenacao.QUICK.value] -= 25
+            if pontuacao[AlgoritmoOrdenacao.INSERTION.value] > PONTUACAO_BANIDO: 
+                pontuacao[AlgoritmoOrdenacao.INSERTION.value] -= 100 # Penalidade severa: Pior caso O(n²) real
 
         # 4. FILTRAGEM SEGURA DE ALTERNATIVAS
         melhor = max(pontuacao, key=pontuacao.get)
         
-        # Bloqueia qualquer possibilidade de algoritmos banidos (-1000) entrarem na lista
-        alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > -500]
+        # Bloqueia qualquer possibilidade de algoritmos banidos entrarem na lista
+        alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > PONTUACAO_CORTE_ALTERNATIVA]
         alternativas = sorted(alternativas, key=lambda x: pontuacao[x], reverse=True)[:2]
         
         complexidades = {
-            "Insertion Sort": "O(n) no melhor caso / O(n²) no pior", 
-            "Selection Sort": "O(n²)", 
-            "Bubble Sort": "O(n²)",
-            "Merge Sort": "O(n log n) garantido", 
-            "Quick Sort": "O(n log n) médio", 
-            "Heap Sort": "O(n log n) garantido"
+            AlgoritmoOrdenacao.INSERTION.value: "O(n) no melhor caso / O(n²) no pior", 
+            AlgoritmoOrdenacao.SELECTION.value: "O(n²)", 
+            AlgoritmoOrdenacao.BUBBLE.value: "O(n²)",
+            AlgoritmoOrdenacao.MERGE.value: "O(n log n) garantido", 
+            AlgoritmoOrdenacao.QUICK.value: "O(n log n) médio", 
+            AlgoritmoOrdenacao.HEAP.value: "O(n log n) garantido"
         }
         
         metadados_memoria_estabilidade = {
-            "Insertion Sort": {"memoria": "O(1)", "estavel": "Sim"},
-            "Selection Sort": {"memoria": "O(1)", "estavel": "Não"},
-            "Bubble Sort": {"memoria": "O(1)", "estavel": "Sim"},
-            "Merge Sort": {"memoria": "O(n)", "estavel": "Sim"},
-            "Quick Sort": {"memoria": "O(log n) médio", "estavel": "Não"},
-            "Heap Sort": {"memoria": "O(1)", "estavel": "Não"}
+            AlgoritmoOrdenacao.INSERTION.value: {"memoria": "O(1)", "estavel": "Sim"},
+            AlgoritmoOrdenacao.SELECTION.value: {"memoria": "O(1)", "estavel": "Não"},
+            AlgoritmoOrdenacao.BUBBLE.value: {"memoria": "O(1)", "estavel": "Sim"},
+            AlgoritmoOrdenacao.MERGE.value: {"memoria": "O(n)", "estavel": "Sim"},
+            AlgoritmoOrdenacao.QUICK.value: {"memoria": "O(log n) médio", "estavel": "Não"},
+            AlgoritmoOrdenacao.HEAP.value: {"memoria": "O(1)", "estavel": "Não"}
         }
         
         # 5. GERAÇÃO DE JUSTIFICATIVAS CONTEXTUAIS
         justificativas = []
-        if melhor == "Quick Sort":
+        if melhor == AlgoritmoOrdenacao.QUICK.value:
             justificativas.append(f"O vetor está misturado de forma homogênea (Grau de inversão: {grau_ordenacao}).")
             justificativas.append("O cenário não impõe limites de memória ou necessidade de estabilidade.")
             justificativas.append("Estatisticamente, apresenta a menor constante de tempo de execução prática.")
             
-        elif melhor == "Heap Sort":
+        elif melhor == AlgoritmoOrdenacao.HEAP.value:
             justificativas.append(f"O array exibe alto índice de inversão estrutural (Grau de inversão: {grau_ordenacao}).")
             justificativas.append("Há restrições severas de memória em tempo de execução.")
             justificativas.append("Garante o teto logarítmico O(n log n) trabalhando de forma In-place (Espaço O(1)).")
             
-        elif melhor == "Insertion Sort":
+        elif melhor == AlgoritmoOrdenacao.INSERTION.value:
             justificativas.append(f"Detectada pré-ordenação quase completa dos elementos (Grau de inversão: {grau_ordenacao}).")
             justificativas.append("Sob esta condição, o algoritmo opera de forma linear, aproximando-se de O(n).")
             justificativas.append("Reduz drasticamente os ciclos de CPU ao mitigar trocas e deslocamentos de ponteiros.")
             
-        elif melhor == "Merge Sort":
+        elif melhor == AlgoritmoOrdenacao.MERGE.value:
             justificativas.append("A estabilidade da ordenação foi definida como requisito crítico de negócio.")
             justificativas.append("Assegura que registros com chaves equivalentes mantenham suas posições relativas originais.")
             justificativas.append("Mantém o comportamento assintótico previsível de O(n log n) sob qualquer distribuição.")
 
         # Tratamento de Avisos do Sistema
         avisos = []
-        if melhor == "Merge Sort":
+        if melhor == AlgoritmoOrdenacao.MERGE.value:
             avisos.append("Este algoritmo aloca memória adicional proporcional ao tamanho do array original.")
-        if melhor == "Quick Sort" and grau_ordenacao >= 0.7:
+        if melhor == AlgoritmoOrdenacao.QUICK.value and grau_ordenacao >= GRAU_INVERSAO_ALTO_QUICK:
             avisos.append("Aviso: Alto grau de inversão detectado. Risco latente de degradação caso ocorra má distribuição do pivô.")
-        if tipo_dados == "object" and metadados_memoria_estabilidade[melhor]["estavel"] == "Não":
+        if tipo_dados == TipoDados.OBJECT.value and metadados_memoria_estabilidade[melhor]["estavel"] == "Não":
             avisos.append("Aviso: Elementos são objetos complexos, mas o algoritmo escolhido não é estável. Pode bagunçar campos secundários.")
-        if dados_em_disco and melhor == "Merge Sort":
+        if dados_em_disco and melhor == AlgoritmoOrdenacao.MERGE.value:
             justificativas.append("Excelente escolha para Ordenação Externa (dados que não cabem na RAM) por causa de seus acessos sequenciais.")
 
         return {
