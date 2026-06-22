@@ -3,8 +3,16 @@ def selecionar_melhor_algoritmo(propriedades):
     grau_ordenacao = propriedades.get("grau_ordenacao", 0.0)
     percentual_duplicatas = propriedades.get("percentual_duplicatas", 0.0)
     restricao_memoria = propriedades.get("restricao_memoria", False)
-    precisa_estabilidade = properties_estabilidade = propriedades.get("precisa_estabilidade", False)
+    precisa_estabilidade = propriedades.get("precisa_estabilidade", False)
     objetivo = propriedades.get("objetivo", "ordenar")
+    
+    # Novos parâmetros do Modo Questionário
+    origem = propriedades.get("origem", "Medida")
+    tipo_dados = propriedades.get("tipo_dados", "int")
+    dados_em_disco = propriedades.get("dados_em_disco", False)
+    busca_frequente = propriedades.get("busca_frequente", False)
+    
+    confianca = "Média (Baseada em Respostas)" if origem == "Declarada" else "Alta (Baseada em Array Real)"
 
     # =================================================================
     # FLUXO DE DECISÃO: BUSCA
@@ -22,6 +30,14 @@ def selecionar_melhor_algoritmo(propriedades):
         # Restrição de Memória afeta a Busca Hash (tabelas hash exigem overhead de espaço)
         if restricao_memoria:
             pontuacao["Busca Hash"] -= 40
+            
+        # Nova Regra: Frequência de Busca
+        if busca_frequente:
+            pontuacao["Busca Binária"] += 20
+            pontuacao["Busca Hash"] += 20
+            pontuacao["Busca Sequencial"] -= 30
+        elif origem == "Declarada" and not busca_frequente:
+            pontuacao["Busca Sequencial"] += 30
             
         # Vetores muito pequenos dispensam estruturas complexas ou ordenação prévia
         if tamanho < 30:
@@ -69,6 +85,7 @@ def selecionar_melhor_algoritmo(propriedades):
             "complexidade": complexidades[melhor], 
             "memoria": metadados_memoria[melhor],
             "estabilidade": "N/A", # Não se aplica à busca simples
+            "confianca": confianca,
             "justificativas": justificativas,
             "avisos": avisos, 
             "alternativas": alternativas
@@ -104,6 +121,13 @@ def selecionar_melhor_algoritmo(propriedades):
                 pontuacao["Heap Sort"] += 30
             if pontuacao["Quick Sort"] > -100 and grau_ordenacao < 0.70:
                 pontuacao["Quick Sort"] += 15
+
+        # Nova Regra: Dados em Disco (Paginação)
+        if dados_em_disco:
+            if pontuacao["Merge Sort"] > -100:
+                pontuacao["Merge Sort"] += 150 # Merge Sort brilha em ordenação externa
+            if pontuacao["Quick Sort"] > -100: pontuacao["Quick Sort"] -= 80 # Péssimo com paginação
+            if pontuacao["Heap Sort"] > -100: pontuacao["Heap Sort"] -= 80
 
         # Penalização progressiva por tempo de execução baseada no tamanho
         if tamanho > 100:
@@ -192,6 +216,10 @@ def selecionar_melhor_algoritmo(propriedades):
             avisos.append("Este algoritmo aloca memória adicional proporcional ao tamanho do array original.")
         if melhor == "Quick Sort" and grau_ordenacao >= 0.7:
             avisos.append("Aviso: Alto grau de inversão detectado. Risco latente de degradação caso ocorra má distribuição do pivô.")
+        if tipo_dados == "object" and metadados_memoria_estabilidade[melhor]["estavel"] == "Não":
+            avisos.append("Aviso: Elementos são objetos complexos, mas o algoritmo escolhido não é estável. Pode bagunçar campos secundários.")
+        if dados_em_disco and melhor == "Merge Sort":
+            justificativas.append("Excelente escolha para Ordenação Externa (dados que não cabem na RAM) por causa de seus acessos sequenciais.")
 
         return {
             "recomendado": melhor,
@@ -199,6 +227,7 @@ def selecionar_melhor_algoritmo(propriedades):
             "complexidade": complexidades[melhor], 
             "memoria": metadados_memoria_estabilidade[melhor]["memoria"],
             "estabilidade": metadados_memoria_estabilidade[melhor]["estavel"],
+            "confianca": confianca,
             "justificativas": justificativas,
             "avisos": avisos, 
             "alternativas": alternativas

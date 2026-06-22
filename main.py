@@ -3,6 +3,7 @@ from utils.gerador import gerar_aleatorio, gerar_quase_ordenado, gerar_invertido
 from utils.contador import ContadorInstrumentacao
 from analisador.caracteristicas import analisar_propriedades_array
 from analisador.motor_decisao import selecionar_melhor_algoritmo
+from analisador.questionario import executar_questionario
 
 from algoritmos.ordenacao.insertion_sort import insertion_sort
 from algoritmos.ordenacao.selection_sort import selection_sort
@@ -39,6 +40,7 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"
     print("--- [CAMADA 2: DECISÃO DA INTELIGÊNCIA] ---")
     print(f"Algoritmo recomendado: {decisao['recomendado']}")
     print(f"Pontuação: {decisao['pontuacao']}/100")
+    print(f"Confiança da Recomendação: {decisao.get('confianca', 'Alta (Baseada em Array Real)')}")
     print(f"Complexidade esperada: {decisao['complexidade']}")
     print(f"Memória: {decisao.get('memoria', 'N/A')} | Estável: {decisao.get('estabilidade', 'N/A')}")
     print("Justificativas:")
@@ -100,6 +102,43 @@ def executar_diagnostico_sistema():
     array_4 = gerar_aleatorio(tamanho)
     rodar_um_teste("EXIGÊNCIA DE ESTABILIDADE NO BECHMARK (DETALHADO)", array_4, memoria=False, estabilidade=True, modo="detalhado")
 
+def rodar_teste_declarado(propriedades):
+    print("=" * 65)
+    print(" CASO DE TESTE: QUESTIONÁRIO (ENTRADA DECLARADA) ")
+    print("=" * 65 + "\n")
+    
+    print("--- [CAMADA 1: METADADOS DECLARADOS] ---")
+    print(f"• Tamanho estimado: {propriedades['tamanho']}")
+    print(f"• Grau de ordenação (Inversões aproximadas): {propriedades['grau_ordenacao']}")
+    print(f"• Percentual de duplicatas: {propriedades['percentual_duplicatas']}%")
+    print(f"• Tipo dos dados: {propriedades.get('tipo_dados', 'int')}")
+    print(f"• Restrições de memória ativas? {propriedades.get('restricao_memoria', False)}")
+    print(f"• Necessidade de estabilidade? {propriedades.get('precisa_estabilidade', False)}")
+    print(f"• Objetivo da operação: {propriedades.get('objetivo', 'ordenar').upper()}")
+    print(f"• Dados em disco/paginação? {propriedades.get('dados_em_disco', False)}")
+    print(f"• Busca frequente? {propriedades.get('busca_frequente', False)}\n")
+    
+    decisao = selecionar_melhor_algoritmo(propriedades)
+    
+    print("--- [CAMADA 2: DECISÃO DA INTELIGÊNCIA] ---")
+    print(f"Algoritmo recomendado: {decisao['recomendado']}")
+    print(f"Pontuação: {decisao['pontuacao']}/100")
+    print(f"Confiança da Recomendação: {decisao.get('confianca', 'N/A')}")
+    print(f"Complexidade esperada: {decisao['complexidade']}")
+    print(f"Memória: {decisao.get('memoria', 'N/A')} | Estável: {decisao.get('estabilidade', 'N/A')}")
+    print("Justificativas:")
+    for just in decisao["justificativas"]:
+        print(f"   • {just}")
+    if decisao["avisos"]:
+        print("Avisos:")
+        for aviso in decisao["avisos"]:
+            print(f"   • {aviso}")
+    print("Alternativas:")
+    for alt in decisao["alternativas"]:
+        print(f"   • {alt}")
+    print("\n" + "-"*65 + "\n")
+    print("[!] O Benchmark empírico foi ignorado pois não há array real (Modo Declarado).\n\n")
+
 def menu_principal():
     print("=" * 65)
     print(" BEM-VINDO AO SELETOR ADAPTATIVO DE ALGORITMOS ")
@@ -108,10 +147,14 @@ def menu_principal():
     print("1. Modo Direto (Apenas recomendação baseada em análise)")
     print("2. Modo Detalhado (Recomendação + Benchmark Empírico completo)")
     print("3. Rodar Bateria de Testes de Diagnóstico (Misto)")
+    print("4. Modo Questionário (Responder perguntas sobre o problema)")
     
-    opcao = input("Opção (1/2/3): ").strip()
+    opcao = input("Opção (1/2/3/4): ").strip()
     
-    if opcao in ["1", "2"]:
+    if opcao == "4":
+        propriedades_declaradas = executar_questionario()
+        rodar_teste_declarado(propriedades_declaradas)
+    elif opcao in ["1", "2"]:
         modo = "detalhado" if opcao == "2" else "direto"
         print("\n[!] Gerando um array aleatório de exemplo para a demonstração interativa...")
         tamanho_exemplo = 1500
