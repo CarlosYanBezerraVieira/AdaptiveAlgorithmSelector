@@ -3,6 +3,7 @@ from utils.benchmark import rodar_benchmarks_gerais
 from analisador.caracteristicas import analisar_propriedades_array
 from analisador.motor_decisao import selecionar_melhor_algoritmo
 from analisador.questionario import executar_questionario
+from analisador.recommendation import gerar_relatorio_recomendacao
 
 def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"):
     print("=" * 65)
@@ -29,22 +30,7 @@ def rodar_um_teste(nome_teste, array_dados, memoria, estabilidade, modo="direto"
     
     decisao = selecionar_melhor_algoritmo(propriedades)
     
-    print("--- [CAMADA 2: DECISÃO DA INTELIGÊNCIA] ---")
-    print(f"Algoritmo recomendado: {decisao['recomendado']}")
-    print(f"Pontuação: {decisao['pontuacao']}/100")
-    print(f"Confiança da Recomendação: {decisao.get('confianca', 'Alta (Baseada em Array Real)')}")
-    print(f"Complexidade esperada: {decisao['complexidade']}")
-    print(f"Memória: {decisao.get('memoria', 'N/A')} | Estável: {decisao.get('estabilidade', 'N/A')}")
-    print("Justificativas:")
-    for just in decisao["justificativas"]:
-        print(f"   • {just}")
-    if decisao["avisos"]:
-        print("Avisos:")
-        for aviso in decisao["avisos"]:
-            print(f"   • {aviso}")
-    print("Alternativas:")
-    for alt in decisao["alternativas"]:
-        print(f"   • {alt}")
+    print(gerar_relatorio_recomendacao(decisao))
     print("\n" + "-"*65 + "\n")
     
     if modo == "detalhado":
@@ -85,22 +71,7 @@ def rodar_teste_declarado(propriedades):
     
     decisao = selecionar_melhor_algoritmo(propriedades)
     
-    print("--- [CAMADA 2: DECISÃO DA INTELIGÊNCIA] ---")
-    print(f"Algoritmo recomendado: {decisao['recomendado']}")
-    print(f"Pontuação: {decisao['pontuacao']}/100")
-    print(f"Confiança da Recomendação: {decisao.get('confianca', 'N/A')}")
-    print(f"Complexidade esperada: {decisao['complexidade']}")
-    print(f"Memória: {decisao.get('memoria', 'N/A')} | Estável: {decisao.get('estabilidade', 'N/A')}")
-    print("Justificativas:")
-    for just in decisao["justificativas"]:
-        print(f"   • {just}")
-    if decisao["avisos"]:
-        print("Avisos:")
-        for aviso in decisao["avisos"]:
-            print(f"   • {aviso}")
-    print("Alternativas:")
-    for alt in decisao["alternativas"]:
-        print(f"   • {alt}")
+    print(gerar_relatorio_recomendacao(decisao))
     print("\n" + "-"*65 + "\n")
     print("[!] O Benchmark empírico foi ignorado pois não há array real (Modo Declarado).\n\n")
 
