@@ -1,5 +1,6 @@
 from utils.contador import ContadorInstrumentacao
 
+
 def heap_sort(arr, contador: ContadorInstrumentacao):
     arr_copia = arr.copy()
     n = len(arr_copia)
@@ -10,6 +11,7 @@ def heap_sort(arr, contador: ContadorInstrumentacao):
         contador.registrar_troca()
         _heapify(arr_copia, i, 0, contador)
     return arr_copia
+
 
 def _heapify(arr, n, i, contador: ContadorInstrumentacao):
     maior = i

@@ -1,15 +1,16 @@
 import unittest
 from unittest.mock import patch
+
 from analisador.questionario import executar_questionario
 
-class TestQuestionario(unittest.TestCase):
 
-    @patch('builtins.input', side_effect=['1', '2', '2', 'N', 'N', 'N', '1', '1'])
+class TestQuestionario(unittest.TestCase):
+    @patch("builtins.input", side_effect=["1", "2", "2", "N", "N", "N", "1", "1"])
     def test_ordenacao_padrao_simples(self, mock_input):
         """
         Teste 1: Ordenar, Tamanho Médio, Aleatório, Sem duplicatas,
         Sem estabilidade, Sem restrição de memória, Tipo simples, Cabe na RAM.
-        Respostas: 
+        Respostas:
         1. Ordenar -> '1'
         2. Médio -> '2'
         3. Aleatório -> '2'
@@ -30,7 +31,7 @@ class TestQuestionario(unittest.TestCase):
         self.assertFalse(props["dados_em_disco"])
         self.assertEqual(props["origem"], "Declarada")
 
-    @patch('builtins.input', side_effect=['2', '1', '1', 'S', 'S', '2', '2'])
+    @patch("builtins.input", side_effect=["2", "1", "1", "S", "S", "2", "2"])
     def test_busca_repetitiva_ordenada(self, mock_input):
         """
         Teste 2: Buscar, Tamanho Pequeno, Já Ordenado, Muitas duplicatas,
@@ -53,7 +54,7 @@ class TestQuestionario(unittest.TestCase):
         self.assertEqual(props["tipo_dados"], "object")
         self.assertTrue(props["busca_frequente"])
 
-    @patch('builtins.input', side_effect=['1', '3', '3', 'N', 'S', 'N', '2', '2'])
+    @patch("builtins.input", side_effect=["1", "3", "3", "N", "S", "N", "2", "2"])
     def test_ordenacao_externa_complexa(self, mock_input):
         """
         Teste 3: Ordenar, Tamanho Grande, Invertidos, Sem duplicatas,
@@ -77,8 +78,8 @@ class TestQuestionario(unittest.TestCase):
         self.assertFalse(props["restricao_memoria"])
         self.assertEqual(props["tipo_dados"], "object")
         self.assertTrue(props["dados_em_disco"])
-        
-    @patch('builtins.input', side_effect=['1', '1', '1', 'S', 'N', 'S', '1', '1'])
+
+    @patch("builtins.input", side_effect=["1", "1", "1", "S", "N", "S", "1", "1"])
     def test_ordenacao_quase_ordenado_pequeno(self, mock_input):
         """
         Teste 4: Ordenar, Pequeno, Quase ordenado, Com duplicatas.
@@ -91,5 +92,6 @@ class TestQuestionario(unittest.TestCase):
         self.assertEqual(props["percentual_duplicatas"], 50.0)
         self.assertTrue(props["restricao_memoria"])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

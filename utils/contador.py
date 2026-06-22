@@ -14,7 +14,4 @@ class ContadorInstrumentacao:
         self.trocas = 0
 
     def obter_resultados(self):
-        return {
-            "comparacoes": self.comparacoes,
-            "trocas": self.trocas
-        }
+        return {"comparacoes": self.comparacoes, "trocas": self.trocas}
