@@ -65,8 +65,7 @@ def carregar_resultados(caminho: str | Path) -> list[ResultadoBenchmark]:
     if arquivo.suffix.lower() == ".csv":
         with arquivo.open(encoding="utf-8", newline="") as dados_csv:
             return [
-                _normalizar_resultado(dict(item))
-                for item in csv.DictReader(dados_csv)
+                _normalizar_resultado(dict(item)) for item in csv.DictReader(dados_csv)
             ]
 
     msg = "Formato nao suportado. Use arquivos .json ou .csv."
@@ -153,8 +152,7 @@ def grafico_acuracia_por_cenario(
             acertos[tipo] += 1
 
     percentuais = {
-        tipo: (acertos[tipo] / total) * 100
-        for tipo, total in sorted(totais.items())
+        tipo: (acertos[tipo] / total) * 100 for tipo, total in sorted(totais.items())
     }
 
     figura, eixo = _criar_figura()

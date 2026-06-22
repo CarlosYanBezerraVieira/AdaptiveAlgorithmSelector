@@ -1,6 +1,9 @@
 import random
 
-def analisar_propriedades_array(arr, objetivo="ordenar", restricao_memoria=False, precisa_estabilidade=False):
+
+def analisar_propriedades_array(
+    arr, objetivo="ordenar", restricao_memoria=False, precisa_estabilidade=False
+):
     if not arr:
         return {}
 
@@ -15,13 +18,13 @@ def analisar_propriedades_array(arr, objetivo="ordenar", restricao_memoria=False
 
     inversoes_detectadas = 0
     tamanho_amostra = min(1000, tamanho)
-    
+
     for _ in range(tamanho_amostra):
         idx1 = random.randint(0, tamanho - 2)
         idx2 = random.randint(idx1 + 1, tamanho - 1)
         if arr[idx1] > arr[idx2]:
             inversoes_detectadas += 1
-            
+
     grau_ordenacao = inversoes_detectadas / tamanho_amostra
 
     return {
@@ -32,5 +35,5 @@ def analisar_propriedades_array(arr, objetivo="ordenar", restricao_memoria=False
         "tipo_dados": tipo_dados,
         "restricao_memoria": restricao_memoria,
         "precisa_estabilidade": precisa_estabilidade,
-        "objetivo": objetivo
+        "objetivo": objetivo,
     }

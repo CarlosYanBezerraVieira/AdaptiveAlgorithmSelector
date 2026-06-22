@@ -1,9 +1,11 @@
 from utils.contador import ContadorInstrumentacao
 
+
 def merge_sort(arr, contador: ContadorInstrumentacao):
     arr_copia = arr.copy()
     _merge_sort_recursivo(arr_copia, contador)
     return arr_copia
+
 
 def _merge_sort_recursivo(arr, contador: ContadorInstrumentacao):
     if len(arr) > 1:
