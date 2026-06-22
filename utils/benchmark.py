@@ -51,7 +51,10 @@ def rodar_benchmarks_gerais(array_dados, algoritmo_recomendado):
         sinalizador = " <- [RECOMENDADO]" if nome == algoritmo_recomendado else ""
         print(f"[{nome}]{sinalizador}")
         print(
-            f"   Tempo: {resultados['tempo_segundos']:.5f}s | Comparações: {resultados['comparacoes']} | Trocas: {resultados['trocas']} | Pico Memória: {resultados['memoria_kb']:.2f} KB"
+            f"   Tempo: {resultados['tempo_segundos']:.5f}s | "
+            f"Comparações: {resultados['comparacoes']} | "
+            f"Trocas: {resultados['trocas']} | "
+            f"Pico Memória: {resultados['memoria_kb']:.2f} KB"
         )
         print("." * 40)
     print("\n\n")

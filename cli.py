@@ -93,10 +93,16 @@ def rodar_teste_declarado(propriedades):
     print(f"• Percentual de duplicatas: {propriedades['percentual_duplicatas']}%")
     print(f"• Tipo dos dados: {propriedades.get('tipo_dados', 'int')}")
     print(
-        f"• Restrições de memória ativas? {propriedades.get('restricao_memoria', False)}"
+        (
+            f"• Restrições de memória ativas? "
+            f"{propriedades.get('restricao_memoria', False)}"
+        )
     )
     print(
-        f"• Necessidade de estabilidade? {propriedades.get('precisa_estabilidade', False)}"
+        (
+            f"• Necessidade de estabilidade? "
+            f"{propriedades.get('precisa_estabilidade', False)}"
+        )
     )
     print(f"• Objetivo da operação: {propriedades.get('objetivo', 'ordenar').upper()}")
     print(f"• Dados em disco/paginação? {propriedades.get('dados_em_disco', False)}")
@@ -107,7 +113,10 @@ def rodar_teste_declarado(propriedades):
     print(gerar_relatorio_recomendacao(decisao))
     print("\n" + "-" * 65 + "\n")
     print(
-        "[!] O Benchmark empírico foi ignorado pois não há array real (Modo Declarado).\n\n"
+        (
+            "[!] O Benchmark empírico foi ignorado pois "
+            "não há array real (Modo Declarado).\n\n"
+        )
     )
 
 
@@ -129,7 +138,10 @@ def menu_principal():
     elif opcao in ["1", "2"]:
         modo = "detalhado" if opcao == "2" else "direto"
         print(
-            "\n[!] Gerando um array aleatório de exemplo para a demonstração interativa..."
+            (
+                "\n[!] Gerando um array aleatório de exemplo "
+                "para a demonstração interativa..."
+            )
         )
         tamanho_exemplo = 1500
         array_ex = gerar_aleatorio(tamanho_exemplo)

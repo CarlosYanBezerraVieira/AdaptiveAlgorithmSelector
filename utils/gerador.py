@@ -7,7 +7,7 @@ def gerar_aleatorio(tamanho, min_val=0, max_val=100000):
 
 
 def gerar_quase_ordenado(tamanho, percentual_desordenado=0.05):
-    """Gera um array inicialmente ordenado e bagunça uma pequena porcentagem de elementos."""
+    """Gera array ordenado e bagunça pequena porcentagem."""
     arr = list(range(tamanho))
     # Calcula quantos elementos vai bagunçar (ex: 5%)
     trocas = int(tamanho * percentual_desordenado)

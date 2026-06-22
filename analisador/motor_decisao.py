@@ -31,7 +31,6 @@ from utils.enums import (
 def selecionar_melhor_algoritmo(propriedades):
     tamanho = propriedades.get("tamanho", 0)
     grau_ordenacao = propriedades.get("grau_ordenacao", 0.0)
-    percentual_duplicatas = propriedades.get("percentual_duplicatas", 0.0)
     restricao_memoria = propriedades.get("restricao_memoria", False)
     precisa_estabilidade = propriedades.get("precisa_estabilidade", False)
     objetivo = propriedades.get("objetivo", Objetivo.ORDENAR.value)
@@ -59,7 +58,8 @@ def selecionar_melhor_algoritmo(propriedades):
             AlgoritmoBusca.HASH.value: SCORE_BASE_BUSCA_HASH,
         }
 
-        # RESTRIÇÃO RÍGIDA: Busca Binária EXIGE ordenação absoluta (grau deve ser estritamente 0.0)
+        # RESTRIÇÃO RÍGIDA: Busca Binária EXIGE ordenação absoluta
+        # (grau deve ser estritamente 0.0)
         if grau_ordenacao > 0.0:
             pontuacao[AlgoritmoBusca.BINARIA.value] = (
                 PONTUACAO_BANIDO  # Banida por violação de pré-requisito matemático
@@ -69,7 +69,8 @@ def selecionar_melhor_algoritmo(propriedades):
                 50  # Altamente recomendada se o vetor estiver ordenado
             )
 
-        # Restrição de Memória afeta a Busca Hash (tabelas hash exigem overhead de espaço)
+        # Restrição de Memória afeta a Busca Hash
+        # (tabelas hash exigem overhead de espaço)
         if restricao_memoria:
             pontuacao[AlgoritmoBusca.HASH.value] -= 40
 
@@ -87,7 +88,8 @@ def selecionar_melhor_algoritmo(propriedades):
             if pontuacao[AlgoritmoBusca.HASH.value] > PONTUACAO_BANIDO:
                 pontuacao[AlgoritmoBusca.HASH.value] -= 20
         else:
-            # Penalização por tempo linear O(n) para busca sequencial em tamanhos maiores
+            # Penalização por tempo linear O(n) para busca sequencial
+            # em tamanhos maiores
             penalidade_n = min(60, tamanho // 100)
             if pontuacao[AlgoritmoBusca.SEQUENCIAL.value] > PONTUACAO_BANIDO:
                 pontuacao[AlgoritmoBusca.SEQUENCIAL.value] -= penalidade_n
@@ -112,16 +114,19 @@ def selecionar_melhor_algoritmo(propriedades):
                 "Permite indexação direta com tempo de busca constante O(1)."
             )
             justificativas.append(
-                "Ideal para máxima eficiência computacional quando há memória disponível."
+                "Ideal para máxima eficiência computacional "
+                "quando há memória disponível."
             )
             if restricao_memoria:
                 avisos.append(
-                    "Aviso: A tabela hash consome memória extra para o mapeamento de chaves."
+                    "Aviso: A tabela hash consome memória extra "
+                    "para o mapeamento de chaves."
                 )
 
         elif melhor == AlgoritmoBusca.BINARIA.value:
             justificativas.append(
-                f"O vetor está perfeitamente ordenado (Grau de inversão: {grau_ordenacao})."
+                f"O vetor está perfeitamente ordenado "
+                f"(Grau de inversão: {grau_ordenacao})."
             )
             justificativas.append(
                 "Reduz o espaço de busca de forma logarítmica a cada iteração."
@@ -130,14 +135,17 @@ def selecionar_melhor_algoritmo(propriedades):
         elif melhor == AlgoritmoBusca.SEQUENCIAL.value:
             if grau_ordenacao > 0.0:
                 justificativas.append(
-                    f"O vetor está desordenado (Grau de inversão: {grau_ordenacao}), tornando a busca binária inviável."
+                    f"O vetor está desordenado (Grau de inversão: {grau_ordenacao}), "
+                    f"tornando a busca binária inviável."
                 )
             else:
                 justificativas.append(
-                    f"O volume de dados é muito reduzido para justificar estruturas complexas ({tamanho} elementos)."
+                    f"O volume de dados é muito reduzido para justificar "
+                    f"estruturas complexas ({tamanho} elementos)."
                 )
             justificativas.append(
-                "Evita o overhead de processamento com tabelas hash ou ordenações prévias."
+                "Evita o overhead de processamento com tabelas hash "
+                "ou ordenações prévias."
             )
 
         return {
@@ -203,7 +211,8 @@ def selecionar_melhor_algoritmo(propriedades):
 
         # Penalização progressiva por tempo de execução baseada no tamanho
         if tamanho > LIMITE_TAMANHO_ORDENACAO_MEDIO:
-            # Deduz até 100 pontos dependendo do quão grande o array é para algoritmos O(n²)
+            # Deduz até 100 pontos dependendo do quão grande o array é
+            # para algoritmos O(n²)
             penalidade_n2 = min(100, tamanho // 50)
             if pontuacao[AlgoritmoOrdenacao.SELECTION.value] > PONTUACAO_BANIDO:
                 pontuacao[AlgoritmoOrdenacao.SELECTION.value] -= penalidade_n2
@@ -217,7 +226,8 @@ def selecionar_melhor_algoritmo(propriedades):
             ):
                 pontuacao[AlgoritmoOrdenacao.INSERTION.value] -= penalidade_n2
 
-            # Algoritmos O(n log n) também têm uma penalidade levíssima pelo tempo, mas muito menor
+            # Algoritmos O(n log n) também têm uma penalidade levíssima pelo tempo,
+            # mas muito menor
             penalidade_nlogn = min(15, tamanho // 1000)
             if pontuacao[AlgoritmoOrdenacao.MERGE.value] > PONTUACAO_BANIDO:
                 pontuacao[AlgoritmoOrdenacao.MERGE.value] -= penalidade_nlogn
@@ -270,71 +280,102 @@ def selecionar_melhor_algoritmo(propriedades):
         justificativas = []
         if melhor == AlgoritmoOrdenacao.QUICK.value:
             justificativas.append(
-                f"O vetor está misturado de forma homogênea (Grau de inversão: {grau_ordenacao})."
+                f"O vetor está misturado de forma homogênea "
+                f"(Grau de inversão: {grau_ordenacao})."
             )
             justificativas.append(
                 "O cenário não impõe limites de memória ou necessidade de estabilidade."
             )
             justificativas.append(
-                "Estatisticamente, apresenta a menor constante de tempo de execução prática."
+                "Estatisticamente, apresenta a menor constante "
+                "de tempo de execução prática."
             )
 
         elif melhor == AlgoritmoOrdenacao.HEAP.value:
             justificativas.append(
-                f"O array exibe alto índice de inversão estrutural (Grau de inversão: {grau_ordenacao})."
+                f"O array exibe alto índice de inversão estrutural "
+                f"(Grau de inversão: {grau_ordenacao})."
             )
             justificativas.append(
                 "Há restrições severas de memória em tempo de execução."
             )
             justificativas.append(
-                "Garante o teto logarítmico O(n log n) trabalhando de forma In-place (Espaço O(1))."
+                "Garante o teto logarítmico O(n log n) trabalhando de "
+                "forma In-place (Espaço O(1))."
             )
 
         elif melhor == AlgoritmoOrdenacao.INSERTION.value:
             justificativas.append(
-                f"Detectada pré-ordenação quase completa dos elementos (Grau de inversão: {grau_ordenacao})."
+                f"Detectada pré-ordenação quase completa dos elementos "
+                f"(Grau de inversão: {grau_ordenacao})."
             )
             justificativas.append(
-                "Sob esta condição, o algoritmo opera de forma linear, aproximando-se de O(n)."
+                "Sob esta condição, o algoritmo opera de forma linear, "
+                "aproximando-se de O(n)."
             )
             justificativas.append(
-                "Reduz drasticamente os ciclos de CPU ao mitigar trocas e deslocamentos de ponteiros."
+                (
+                    "Reduz drasticamente os ciclos de CPU "
+                    "ao mitigar trocas e deslocamentos de ponteiros."
+                )
             )
 
         elif melhor == AlgoritmoOrdenacao.MERGE.value:
             justificativas.append(
-                "A estabilidade da ordenação foi definida como requisito crítico de negócio."
+                (
+                    "A estabilidade da ordenação foi definida "
+                    "como requisito crítico de negócio."
+                )
             )
             justificativas.append(
-                "Assegura que registros com chaves equivalentes mantenham suas posições relativas originais."
+                (
+                    "Assegura que registros com chaves equivalentes "
+                    "mantenham suas posições relativas originais."
+                )
             )
             justificativas.append(
-                "Mantém o comportamento assintótico previsível de O(n log n) sob qualquer distribuição."
+                (
+                    "Mantém o comportamento assintótico previsível de "
+                    "O(n log n) sob qualquer distribuição."
+                )
             )
 
         # Tratamento de Avisos do Sistema
         avisos = []
         if melhor == AlgoritmoOrdenacao.MERGE.value:
             avisos.append(
-                "Este algoritmo aloca memória adicional proporcional ao tamanho do array original."
+                (
+                    "Este algoritmo aloca memória adicional proporcional "
+                    "ao tamanho do array original."
+                )
             )
         if (
             melhor == AlgoritmoOrdenacao.QUICK.value
             and grau_ordenacao >= GRAU_INVERSAO_ALTO_QUICK
         ):
             avisos.append(
-                "Aviso: Alto grau de inversão detectado. Risco latente de degradação caso ocorra má distribuição do pivô."
+                (
+                    "Aviso: Alto grau de inversão detectado. "
+                    "Risco latente de degradação caso ocorra má distribuição do pivô."
+                )
             )
         if (
             tipo_dados == TipoDados.OBJECT.value
             and METADADOS_ORDENACAO[melhor]["estavel"] == "Não"
         ):
             avisos.append(
-                "Aviso: Elementos são objetos complexos, mas o algoritmo escolhido não é estável. Pode bagunçar campos secundários."
+                (
+                    "Aviso: Elementos são objetos complexos, mas o algoritmo "
+                    "escolhido não é estável. Pode bagunçar campos secundários."
+                )
             )
         if dados_em_disco and melhor == AlgoritmoOrdenacao.MERGE.value:
             justificativas.append(
-                "Excelente escolha para Ordenação Externa (dados que não cabem na RAM) por causa de seus acessos sequenciais."
+                (
+                    "Excelente escolha para Ordenação Externa "
+                    "(dados que não cabem na RAM) "
+                    "por causa de seus acessos sequenciais."
+                )
             )
 
         return {

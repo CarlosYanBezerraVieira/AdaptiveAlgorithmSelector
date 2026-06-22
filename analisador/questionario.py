@@ -66,7 +66,10 @@ def executar_questionario():
 
     if propriedades["objetivo"] == Objetivo.ORDENAR.value:
         print(
-            "\n5. A estabilidade do algoritmo é obrigatória? (Manter a ordem original de itens iguais)"
+            (
+                "\n5. A estabilidade do algoritmo é obrigatória? "
+                "(Manter a ordem original de itens iguais)"
+            )
         )
         est = input("   [S] Sim / [N] Não -> ").strip().upper()
         if est == "S":
@@ -80,7 +83,10 @@ def executar_questionario():
         propriedades["restricao_memoria"] = True
 
     print(
-        "\n7. Os elementos são numéricos simples ou objetos complexos (ex: dicionários/instâncias)?"
+        (
+            "\n7. Os elementos são numéricos simples "
+            "ou objetos complexos (ex: dicionários/instâncias)?"
+        )
     )
     print("   [1] Simples")
     print("   [2] Complexos")
@@ -90,7 +96,10 @@ def executar_questionario():
 
     if propriedades["objetivo"] == Objetivo.ORDENAR.value:
         print(
-            "\n8. Os dados cabem inteiramente na memória RAM ou vêm de um arquivo enorme (disco)?"
+            (
+                "\n8. Os dados cabem inteiramente na memória RAM "
+                "ou vêm de um arquivo enorme (disco)?"
+            )
         )
         print("   [1] Cabem na RAM")
         print("   [2] Vêm de um arquivo gigante (Paginação)")
@@ -99,7 +108,10 @@ def executar_questionario():
             propriedades["dados_em_disco"] = True
     else:
         print(
-            "\n8. Você fará essa busca apenas uma vez ou buscará milhares de vezes no mesmo conjunto?"
+            (
+                "\n8. Você fará essa busca apenas uma vez "
+                "ou buscará milhares de vezes no mesmo conjunto?"
+            )
         )
         print("   [1] Uma vez")
         print("   [2] Milhares de vezes")

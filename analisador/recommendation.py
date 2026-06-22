@@ -4,7 +4,10 @@ def gerar_relatorio_recomendacao(decisao):
     relatorio += f"Pontuação: {decisao['pontuacao']}/100\n"
     relatorio += f"Confiança da Recomendação: {decisao.get('confianca', 'N/A')}\n"
     relatorio += f"Complexidade esperada: {decisao.get('complexidade', 'N/A')}\n"
-    relatorio += f"Memória: {decisao.get('memoria', 'N/A')} | Estável: {decisao.get('estabilidade', 'N/A')}\n"
+    relatorio += (
+        f"Memória: {decisao.get('memoria', 'N/A')} | "
+        f"Estável: {decisao.get('estabilidade', 'N/A')}\n"
+    )
 
     relatorio += "Justificativas:\n"
     for just in decisao.get("justificativas", []):
