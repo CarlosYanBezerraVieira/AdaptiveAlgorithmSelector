@@ -9,6 +9,7 @@ from utils.constants import (
     SCORE_BASE_MERGE, SCORE_BASE_QUICK, SCORE_BASE_HEAP
 )
 from utils.enums import Objetivo, OrigemMetricas, TipoDados, AlgoritmoBusca, AlgoritmoOrdenacao
+from analisador.algorithm_metadata import METADADOS_ORDENACAO, METADADOS_BUSCA
 
 def selecionar_melhor_algoritmo(propriedades):
     tamanho = propriedades.get("tamanho", 0)
@@ -71,17 +72,6 @@ def selecionar_melhor_algoritmo(propriedades):
         alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > PONTUACAO_CORTE_ALTERNATIVA]
         alternativas = sorted(alternativas, key=lambda x: pontuacao[x], reverse=True)[:2]
         
-        complexidades = {
-            AlgoritmoBusca.SEQUENCIAL.value: "O(n)", 
-            AlgoritmoBusca.BINARIA.value: "O(log n)", 
-            AlgoritmoBusca.HASH.value: "O(1)"
-        }
-        metadados_memoria = {
-            AlgoritmoBusca.SEQUENCIAL.value: "O(1)", 
-            AlgoritmoBusca.BINARIA.value: "O(1)", 
-            AlgoritmoBusca.HASH.value: "O(n)"
-        }
-        
         # Geração de Justificativas Dinâmicas e Coerentes baseadas em Metadados
         justificativas = []
         avisos = []
@@ -106,9 +96,9 @@ def selecionar_melhor_algoritmo(propriedades):
         return {
             "recomendado": melhor, 
             "pontuacao": min(100, max(0, pontuacao[melhor])),
-            "complexidade": complexidades[melhor], 
-            "memoria": metadados_memoria[melhor],
-            "estabilidade": "N/A", # Não se aplica à busca simples
+            "complexidade": METADADOS_BUSCA[melhor]["complexidade"], 
+            "memoria": METADADOS_BUSCA[melhor]["memoria"],
+            "estabilidade": METADADOS_BUSCA[melhor]["estavel"],
             "confianca": confianca,
             "justificativas": justificativas,
             "avisos": avisos, 
@@ -198,24 +188,6 @@ def selecionar_melhor_algoritmo(propriedades):
         alternativas = [alg for alg in pontuacao if alg != melhor and pontuacao[alg] > PONTUACAO_CORTE_ALTERNATIVA]
         alternativas = sorted(alternativas, key=lambda x: pontuacao[x], reverse=True)[:2]
         
-        complexidades = {
-            AlgoritmoOrdenacao.INSERTION.value: "O(n) no melhor caso / O(n²) no pior", 
-            AlgoritmoOrdenacao.SELECTION.value: "O(n²)", 
-            AlgoritmoOrdenacao.BUBBLE.value: "O(n²)",
-            AlgoritmoOrdenacao.MERGE.value: "O(n log n) garantido", 
-            AlgoritmoOrdenacao.QUICK.value: "O(n log n) médio", 
-            AlgoritmoOrdenacao.HEAP.value: "O(n log n) garantido"
-        }
-        
-        metadados_memoria_estabilidade = {
-            AlgoritmoOrdenacao.INSERTION.value: {"memoria": "O(1)", "estavel": "Sim"},
-            AlgoritmoOrdenacao.SELECTION.value: {"memoria": "O(1)", "estavel": "Não"},
-            AlgoritmoOrdenacao.BUBBLE.value: {"memoria": "O(1)", "estavel": "Sim"},
-            AlgoritmoOrdenacao.MERGE.value: {"memoria": "O(n)", "estavel": "Sim"},
-            AlgoritmoOrdenacao.QUICK.value: {"memoria": "O(log n) médio", "estavel": "Não"},
-            AlgoritmoOrdenacao.HEAP.value: {"memoria": "O(1)", "estavel": "Não"}
-        }
-        
         # 5. GERAÇÃO DE JUSTIFICATIVAS CONTEXTUAIS
         justificativas = []
         if melhor == AlgoritmoOrdenacao.QUICK.value:
@@ -244,7 +216,7 @@ def selecionar_melhor_algoritmo(propriedades):
             avisos.append("Este algoritmo aloca memória adicional proporcional ao tamanho do array original.")
         if melhor == AlgoritmoOrdenacao.QUICK.value and grau_ordenacao >= GRAU_INVERSAO_ALTO_QUICK:
             avisos.append("Aviso: Alto grau de inversão detectado. Risco latente de degradação caso ocorra má distribuição do pivô.")
-        if tipo_dados == TipoDados.OBJECT.value and metadados_memoria_estabilidade[melhor]["estavel"] == "Não":
+        if tipo_dados == TipoDados.OBJECT.value and METADADOS_ORDENACAO[melhor]["estavel"] == "Não":
             avisos.append("Aviso: Elementos são objetos complexos, mas o algoritmo escolhido não é estável. Pode bagunçar campos secundários.")
         if dados_em_disco and melhor == AlgoritmoOrdenacao.MERGE.value:
             justificativas.append("Excelente escolha para Ordenação Externa (dados que não cabem na RAM) por causa de seus acessos sequenciais.")
@@ -252,9 +224,9 @@ def selecionar_melhor_algoritmo(propriedades):
         return {
             "recomendado": melhor,
             "pontuacao": min(100, max(0, pontuacao[melhor])),
-            "complexidade": complexidades[melhor], 
-            "memoria": metadados_memoria_estabilidade[melhor]["memoria"],
-            "estabilidade": metadados_memoria_estabilidade[melhor]["estavel"],
+            "complexidade": METADADOS_ORDENACAO[melhor]["complexidade"], 
+            "memoria": METADADOS_ORDENACAO[melhor]["memoria"],
+            "estabilidade": METADADOS_ORDENACAO[melhor]["estavel"],
             "confianca": confianca,
             "justificativas": justificativas,
             "avisos": avisos, 
