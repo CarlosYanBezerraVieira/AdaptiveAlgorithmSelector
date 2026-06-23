@@ -78,11 +78,20 @@ def executar_analise_questionario(propriedades):
 
     print("--- [ METADADOS DECLARADOS ] ---")
     print(f"• Tamanho estimado: {propriedades['tamanho']}")
-    print(f"• Grau de ordenação (Inversões aproximadas): {propriedades['grau_ordenacao']}")
+    print(
+        "• Grau de ordenação (Inversões aproximadas): "
+        f"{propriedades['grau_ordenacao']}"
+    )
     print(f"• Percentual de duplicatas: {propriedades['percentual_duplicatas']}%")
     print(f"• Tipo dos dados: {propriedades.get('tipo_dados', 'int')}")
-    print(f"• Restrições de memória ativas? {propriedades.get('restricao_memoria', False)}")
-    print(f"• Necessidade de estabilidade? {propriedades.get('precisa_estabilidade', False)}")
+    print(
+        "• Restrições de memória ativas? "
+        f"{propriedades.get('restricao_memoria', False)}"
+    )
+    print(
+        "• Necessidade de estabilidade? "
+        f"{propriedades.get('precisa_estabilidade', False)}"
+    )
     print(f"• Objetivo da operação: {propriedades.get('objetivo', 'ordenar').upper()}")
     print(f"• Dados em disco/paginação? {propriedades.get('dados_em_disco', False)}")
     print(f"• Busca frequente? {propriedades.get('busca_frequente', False)}\n")
