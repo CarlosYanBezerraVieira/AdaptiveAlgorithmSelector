@@ -1,74 +1,19 @@
-# Metricas obrigatorias da validacao
+# Métricas de Validação Empírica
 
-Este modulo consolida as metricas exigidas na secao 9.1 do enunciado:
+Este módulo documenta as quatro métricas obrigatórias exigidas para comprovação científica do seletor. Os resultados são calculados via `validacao/validar_seletor.py`.
 
-- taxa de acerto Top-2;
-- overhead medio;
-- tempo medio de decisao;
-- impacto do tipo de conjunto de dados.
+## Definição das Métricas
 
-## Como executar
+1. **Taxa de Acerto Top-2 (%):**
+   Mede a porcentagem de vezes em que a recomendação feita pela IA do seletor corresponde a um dos dois algoritmos mais rápidos medidos na prática (pelo motor de benchmark).
 
-```bash
-python -m validacao.validar_seletor
-```
+2. **Overhead Médio do Seletor (%):**
+   Calcula o custo que o "cérebro" de análise cobra do tempo total. A fórmula no sistema é:
+   `Overhead (%) = (Tempo_Decisão / Tempo_Algoritmo_Recomendado) * 100`
 
-Por padrao, o relatorio e salvo em:
+3. **Tempo Médio de Decisão (s):**
+   Registra o tempo cronometrado exclusivamente para a extração probabilística de features (em `caracteristicas.py`) e a execução do pipeline de scoring (`motor_decisao.py`).
 
-```text
-resultados/validacao/metricas_obrigatorias.json
-```
-
-Tambem e possivel customizar tamanhos, repeticoes e saida:
-
-```bash
-python -m validacao.validar_seletor --tamanhos 30 100 1000 --repeticoes 3 --saida resultados/validacao/metricas.csv
-```
-
-## Campos exportados
-
-O JSON possui tres blocos:
-
-- `metricas`: resumo das quatro metricas obrigatorias.
-- `cenarios`: resumo por cenario avaliado.
-- `resultados`: linhas por algoritmo, prontas para alimentar os graficos.
-
-Cada linha de `resultados` possui campos como:
-
-```json
-{
-  "cenario": "Aleatorio_n1000",
-  "tipo_cenario": "aleatorio",
-  "tamanho": 1000,
-  "algoritmo": "Quick Sort",
-  "tempo_segundos": 0.012,
-  "comparacoes": 3500,
-  "trocas": 900,
-  "memoria_kb": 48.5,
-  "tempo_decisao_segundos": 0.004,
-  "overhead_percentual": 4.2,
-  "acerto_top2": true,
-  "posicao_recomendado": 1
-}
-```
-
-## Como gerar graficos a partir da validacao
-
-Depois de gerar o JSON:
-
-```bash
-python -m validacao.gerar_graficos --entrada resultados/validacao/metricas_obrigatorias.json
-```
-
-Os graficos serao salvos em `resultados/graficos`.
-
-## Observacoes
-
-- O tempo de decisao mede apenas analise de caracteristicas + pontuacao.
-- O tempo de ordenacao nao entra no tempo de decisao.
-- O overhead e calculado como `tempo_decisao / tempo_algoritmo_recomendado * 100`,
-  que equivale a formula do professor quando `Tseletor` inclui decisao +
-  algoritmo recomendado.
-- A validacao padrao usa tamanhos pequenos e medios para evitar que algoritmos
-  O(n^2) tornem a execucao local muito demorada. Para experimentos finais, a
-  equipe pode informar tamanhos maiores via `--tamanhos`.
+4. **Impacto do Tipo de Conjunto de Dados (%):**
+   Mede a consistência do sistema avaliando a discrepância da acurácia. A fórmula é:
+   `Impacto = Max(Taxas_Por_Tipo) - Min(Taxas_Por_Tipo)` (ex: Acerto no vetor aleatório vs. vetor invertido).
